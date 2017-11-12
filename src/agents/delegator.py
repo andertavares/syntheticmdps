@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Delegator(object):
-    def __init__(self, team, alpha=0.1, epsilon=0.1, alphaDecay = 0.99, epsilonDecay = 0.99, name='Controller'):
+    def __init__(self, team, alpha=0.1, epsilon=0.1, alpha_decay=0.99, epsilon_decay=0.99, name='Controller'):
         """
         Receives the array of agents
         """
@@ -13,8 +13,8 @@ class Delegator(object):
         self.alpha = alpha
         self.name = name
         self.epsilon = epsilon
-        self.alphaDecay = alphaDecay
-        self.epsilonDecay = epsilonDecay
+        self.alphaDecay = alpha_decay
+        self.epsilonDecay = epsilon_decay
 
     def p_best(self, bandit):
         best_action = bandit.best_arm

@@ -13,17 +13,17 @@ from agents.gaussian import *
 from agents.delegator import Delegator
 from util import meeting_point
 
-team_sizes = [5, 10, 15, 20, 25]
-bandit_sizes = [100, 150, 200, 250, 300]
+team_sizes = [5] # [5, 10, 15, 20, 25]
+bandit_sizes = [10] # [100, 150, 200, 250, 300]
 mus = [0.2, 0.4, 0.6]
 sigma = 0.2
-trials = 10000
+trials = 100 #10k
 executions = 1000
 executionRewardsActions = np.zeros((executions, trials))
 executionRewardsGaussian = np.zeros((executions, trials))
 p_best_ltd = np.zeros((executions, trials))
 p_best_lta = np.zeros((executions, trials))
-expNumber = int(sys.argv[1])
+#expNumber = int(sys.argv[1])
 
 experiments = []
 exp_dict = {}
@@ -33,60 +33,73 @@ name = "results_gaussian"
 for n_arms in bandit_sizes:
     for team_sz in team_sizes:
         for currentMu in mus:
-            os.system("mkdir -p " + name + "/" + str(expNumber)+"/"+str(n_arms)+"/"+str(team_sz)+"/"+str(currentMu)+"/");
+            os.system("mkdir -p " + os.path.join(name, str(n_arms), str(team_sz), '%.2f' % currentMu))
+
+            # identifies groups of experiments by their parameters
+            exp_group_name = '%d/%d/%.2f' % (n_arms, team_sz, currentMu)
+            exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
 
             for e in range(executions):
 
                 bandit = Bandit(n_arms, None, 0.25)
 
-                learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alphaDecay=0.999, epsilonDecay=0.999)
+                learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999)
                 ctrl_gaussian = Delegator(
-                    [GaussianAgentPrune(bandit, 0.95, mu=currentMu, sigma=sigma) for _ in range(team_sz)], alpha=1.0,
-                    epsilon=1.0, alphaDecay=0.999, epsilonDecay=0.999
+                    [GaussianAgentPrune(
+                        bandit, 0.95, mu=currentMu, sigma=sigma
+                    ) for _ in range(team_sz)],
+                    alpha=1.0,
+                    epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999
                 )
-                over_actions = Experiment(bandit, learner)
-                over_gaussian_agents = Experiment(bandit, ctrl_gaussian)
+                experiment_id = '%d/%d/%d/%.2f' % (e, n_arms, team_sz, currentMu)
+
+                over_actions = Experiment(bandit, learner, 'LtA/' + experiment_id)
+                over_gaussian_agents = Experiment(bandit, ctrl_gaussian, 'LtD/' + experiment_id)
                 # over_actions.run(trials)
                 # over_gaussian_agents.run(trials)
                 experiments.append(over_actions)
                 experiments.append(over_gaussian_agents)
 
-                experiment_id = '%d/%d/%d/%.2f' % (expNumber, n_arms, team_sz, currentMu)
 
-                exp_dict[experiment_id] = (over_actions, over_gaussian_agents)
 
+print('Setup finished.')
 manager = ParallelExperiment(experiments)
 manager.run(trials)
+print('Experiments finished.')
+# organize results
 
-# results = {
-#     'gauss': [r for r in manager.result if str(r.agent) == 'Gaussian'],
-#     'unif': [r for r in manager.result if str(r.agent) == 'Uniform'],
-#     'actions': [over_actions] * len(team_sizes)
-# }
+for r in manager.result:
+    # group by n_arms, team_sz and currentMu: each exec will be an entry
+    index_str, execution_str, n_arms, team_sz, currentMu = r.id.split('/')
+    exp_group_name = '%s/%s/%s' % (n_arms, team_sz, currentMu)
 
-# TODO run experiments, identify them and extract results
-executionRewardsActions[e] = over_actions.rewards
-executionRewardsGaussian[e] = over_gaussian_agents.rewards
-p_best_ltd[e] = over_gaussian_agents.p_best
-p_best_lta[e] = over_actions.p_best
+    #index_str = 'LtA' if r.agent == 'LearningAgent' else 'LtD'
+    exp_dict[exp_group_name][index_str].append(r)
 
-meetingPoint = meeting_point(np.mean(executionRewardsActions,0),np.mean(executionRewardsGaussian,0));
+print('Results organized')
+for exp_group_name, exp_group in exp_dict.items():
+    executionRewardsActions = [exp.rewards for exp in exp_group['LtA']]
+    executionRewardsGaussian = [exp.rewards for exp in exp_group['LtD']]
 
-plt.figure()
-plt.plot(np.mean(executionRewardsActions,0),label="Actions")
-plt.plot(np.mean(executionRewardsGaussian,0),label="Gaussian")
-plt.plot(np.convolve(np.mean(executionRewardsActions,0), np.ones((100,))/100, mode='valid'));
-plt.plot(np.convolve(np.mean(executionRewardsGaussian,0), np.ones((100,))/100, mode='valid'));
-plt.xlabel("Iteration")
-plt.ylabel("Reward")
-plt.legend()
-plt.savefig(name + "/" + str(expNumber)+"/"+str(n_arms)+"/"+str(team_sz)+"/"+str(currentMu)+"/result.pdf");
-plt.close()
+    meetingPoint = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian, 0))
 
-pickleFile = open(name + "/" + str(expNumber)+"/"+str(n_arms)+"/"+str(team_sz)+"/"+str(currentMu)+"/results.pickle","wb");
-pickle.dump([
-    np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian,0),
-    np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0),
-    meetingPoint
-], pickleFile)
-pickleFile.close()
+    plt.figure()
+    plt.plot(np.mean(executionRewardsActions, 0), label="Actions")
+    plt.plot(np.mean(executionRewardsGaussian, 0), label="Gaussian")
+    plt.plot(np.convolve(np.mean(executionRewardsActions, 0), np.ones((100,))/100, mode='valid'))
+    plt.plot(np.convolve(np.mean(executionRewardsGaussian, 0), np.ones((100,))/100, mode='valid'))
+    plt.xlabel("Iteration")
+    plt.ylabel("Reward")
+    plt.legend()
+    plt.savefig(os.path.join(name, exp_group_name, "result.pdf"))
+    plt.close()
+
+    pickleFile = open(os.path.join(name, exp_group_name, "results.pickle"), "wb")
+    pickle.dump([
+        np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian, 0),
+        np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0),
+        meetingPoint
+    ], pickleFile)
+    pickleFile.close()
+
+print('Done')

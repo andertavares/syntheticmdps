@@ -2,19 +2,18 @@ import numpy as np
 
 
 class LearningAgent(object):
-    def __init__(self, bandit, alpha=0.1, epsilon=0.1, alphaDecay = 0.99, epsilonDecay = 0.99):
+    def __init__(self, bandit, alpha=0.1, epsilon=0.1, alpha_decay = 0.99, epsilon_decay = 0.99):
         self.bandit = bandit
         self.alpha = alpha
         self.q = np.zeros(len(bandit.arms))
         self.last_choice = None
         self.epsilon = epsilon
-        self.alphaDecay = alphaDecay
-        self.epsilonDecay = epsilonDecay
+        self.alphaDecay = alpha_decay
+        self.epsilonDecay = epsilon_decay
 
     def act(self):
         """
         Epsilon greedy over actions
-        TODO: break ties arbitrarily in np.argmax
         """
         if np.random.random() < self.epsilon:
             self.last_choice = np.random.randint(0, len(self.q))

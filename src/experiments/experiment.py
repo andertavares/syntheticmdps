@@ -6,8 +6,9 @@ from multiprocessing import Pool
 
 
 class Experiment(object):
-    def __init__(self, env, agent):
+    def __init__(self, env, agent, experiment_id=None):
         np.random.seed()
+        self.id = experiment_id
         self.env = env
         self.agent = agent
         self.actions = []
