@@ -6,26 +6,28 @@ import sys
 import numpy as np
 import pickle
 
-from bandit import Bandit
 from agents.learning import LearningAgent
-from experiment import Experiment
+from env.bandit import Bandit
+from experiments.experiment import Experiment
 from agents.gaussian import *
 from agents.delegator import Delegator
 from util import meeting_point
 
 team_sizes = [5, 10, 15, 20, 25]
 bandit_sizes = [100, 150, 200, 250, 300]
-mus = [0.2,0.4,0.6]
+mus = [0.2, 0.4, 0.6]
 sigma = 0.2
 trials = 10000
 executions = 1000
-executionRewardsActions = np.zeros((executions,trials))
-executionRewardsGaussian = np.zeros((executions,trials))
-p_best_ltd = np.zeros((executions,trials))
-p_best_lta = np.zeros((executions,trials))
+executionRewardsActions = np.zeros((executions, trials))
+executionRewardsGaussian = np.zeros((executions, trials))
+p_best_ltd = np.zeros((executions, trials))
+p_best_lta = np.zeros((executions, trials))
 expNumber = int(sys.argv[1])
 
-name = "gaussian";
+experiments = []
+
+name = "results_gaussian"
 
 for n_arms in bandit_sizes:
     for team_sz in team_sizes:
@@ -34,22 +36,24 @@ for n_arms in bandit_sizes:
 
             for e in range(executions):
 
-                bandit = Bandit(n_arms, None, 0.25);
+                bandit = Bandit(n_arms, None, 0.25)
 
-                learner = LearningAgent(bandit,alpha=1.0,epsilon=1.0,alphaDecay=0.999,epsilonDecay=0.999)
+                learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alphaDecay=0.999, epsilonDecay=0.999)
+                ctrl_gaussian = Delegator(
+                    [GaussianAgentPrune(bandit, 0.95, mu=currentMu, sigma=sigma) for _ in range(team_sz)], alpha=1.0,
+                    epsilon=1.0, alphaDecay=0.999, epsilonDecay=0.999
+                )
                 over_actions = Experiment(bandit, learner)
-                over_actions.run(trials)
-
-                ctrl_gaussian = Delegator([GaussianAgentPrune(bandit,0.95,mu=currentMu,sigma=sigma) for _ in range(team_sz)], alpha=1.0,epsilon=1.0,alphaDecay=0.999,epsilonDecay=0.999);
-
                 over_gaussian_agents = Experiment(bandit, ctrl_gaussian)
+                over_actions.run(trials)
                 over_gaussian_agents.run(trials)
+                #experiments.append(over_actions)
+                #experiments.append(over_gaussian_agents)
 
-                executionRewardsActions[e] = over_actions.rewards;
-                executionRewardsGaussian[e] = over_gaussian_agents.rewards;
+                executionRewardsActions[e] = over_actions.rewards
+                executionRewardsGaussian[e] = over_gaussian_agents.rewards
                 p_best_ltd[e] = over_gaussian_agents.p_best
                 p_best_lta[e] = over_actions.p_best
-
 
             meetingPoint = meeting_point(np.mean(executionRewardsActions,0),np.mean(executionRewardsGaussian,0));
 
@@ -66,7 +70,8 @@ for n_arms in bandit_sizes:
 
             pickleFile = open(name + "/" + str(expNumber)+"/"+str(n_arms)+"/"+str(team_sz)+"/"+str(currentMu)+"/results.pickle","wb");
             pickle.dump([
-                np.mean(executionRewardsActions,0), np.mean(executionRewardsGaussian,0),
-                np.mean(p_best_lta,0), np.mean(p_best_ltd,0),
-                meetingPoint],pickleFile)
+                np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian,0),
+                np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0),
+                meetingPoint
+            ], pickleFile)
             pickleFile.close()

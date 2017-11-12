@@ -1,5 +1,5 @@
 import numpy as np
-import uniform
+import agents.uniform as uniform
 from math import ceil
 import scipy.stats as stats
 
