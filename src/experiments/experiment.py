@@ -5,6 +5,7 @@ import numpy as np
 from multiprocessing import Pool
 import multiprocessing
 
+
 class Experiment(object):
     def __init__(self, env, agent, experiment_id=None):
         np.random.seed()
@@ -78,7 +79,7 @@ class ParallelExperiment(object):
         for i in range(0, len(self.experiments), num_pool):
             print('Running from %d to %d' % (i, i+num_pool-1))
             with Pool(num_pool) as p:
-                partial_result = p.map(self.run_binded, self.experiments)
+                partial_result = p.map(self.run_binded, self.experiments[i:i+num_pool])
             self.result += partial_result
 
     def run_binded(self, experiment):

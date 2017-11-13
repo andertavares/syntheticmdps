@@ -13,6 +13,8 @@ from agents.gaussian import *
 from agents.delegator import Delegator
 from util import meeting_point
 
+# TODO get configs from file
+
 team_sizes = [5] # [5, 10, 15, 20, 25]
 bandit_sizes = [10] # [100, 150, 200, 250, 300]
 mus = [0.2, 0.4, 0.6]
