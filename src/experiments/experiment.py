@@ -3,7 +3,7 @@ import sys
 import copy
 import numpy as np
 from multiprocessing import Pool
-
+import multiprocessing
 
 class Experiment(object):
     def __init__(self, env, agent, experiment_id=None):
@@ -63,15 +63,25 @@ class ParallelExperiment(object):
         os.system("taskset -p 0xfffff %d" % os.getpid())
         self.experiments = experiments
         self.result = None
+        self.pool = None
 
     def run(self, trials, verbose=False):
         self.trials = trials
         self.verbose = verbose
-        num_pool = max(10, len(self.experiments))
+        num_pool = min(10, len(self.experiments))
 
-        with Pool(num_pool) as p:
-            self.result = p.map(self.run_binded, self.experiments)
+        # self.pool = multiprocessing.Pool(num_pool)
+
+        # divides into a number of pools
+        self.result = []
+
+        for i in range(0, len(self.experiments), num_pool):
+            print('Running from %d to %d' % (i, i+num_pool-1))
+            with Pool(num_pool) as p:
+                partial_result = p.map(self.run_binded, self.experiments)
+            self.result += partial_result
 
     def run_binded(self, experiment):
+
         experiment.run(self.trials, self.verbose)
         return copy.copy(experiment)
