@@ -15,6 +15,8 @@ class Experiment(object):
         self.actions = []
         self.rewards = []
         self.p_best = []
+        self.cumulative_rewards = []
+        self.cumulative_times_best = []
         self.cumulative_reward = 0
         self.cumulative_regret = 0      # actual cumulative regret
         self.cumulative_regret_exp = 0  # expected cumulative regret
@@ -38,11 +40,13 @@ class Experiment(object):
             self.rewards.append(reward)
             self.p_best.append(self.agent.p_best(self.env))
             self.cumulative_reward += reward
+            self.cumulative_rewards.append(self.cumulative_reward)
             self.cumulative_regret += self.env.best_reward - reward
             self.cumulative_regret_exp += self.env.best_reward - self.env.bandits_mu[action]
 
             if action == self.env.best_arm:
                 times_best_action += 1
+            self.cumulative_times_best.append(times_best_action)
 
             if verbose:
                 sys.stdout.write("\rTrial %8d" % i)
@@ -77,7 +81,7 @@ class ParallelExperiment(object):
         self.result = []
 
         for i in range(0, len(self.experiments), num_pool):
-            print('Running from %d to %d' % (i, i+num_pool-1))
+            sys.stdout.write('\rRunning from %8d to %8d out of %8d' % (i, i+num_pool-1, len(self.experiments)))
             with Pool(num_pool) as p:
                 partial_result = p.map(self.run_binded, self.experiments[i:i+num_pool])
             self.result += partial_result

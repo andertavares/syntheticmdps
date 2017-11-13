@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -7,7 +9,7 @@ import numpy as np
 import pickle
 
 from agents.learning import LearningAgent
-from env.bandit import Bandit
+from environment.bandit import Bandit
 from experiments.experiment import Experiment, ParallelExperiment
 from agents.gaussian import *
 from agents.delegator import Delegator
@@ -83,6 +85,15 @@ for exp_group_name, exp_group in exp_dict.items():
     executionRewardsActions = [exp.rewards for exp in exp_group['LtA']]
     executionRewardsGaussian = [exp.rewards for exp in exp_group['LtD']]
 
+    p_best_lta = [exp.p_best for exp in exp_group['LtA']]
+    p_best_ltd = [exp.p_best for exp in exp_group['LtD']]
+
+    times_best_lta = [exp.cumulative_times_best for exp in exp_group['LtA']]
+    times_best_ltd = [exp.cumulative_times_best for exp in exp_group['LtD']]
+
+    cumulative_rewards_lta = [exp.cumulative_rewards for exp in exp_group['LtA']]
+    cumulative_rewards_ltd = [exp.cumulative_rewards for exp in exp_group['LtD']]
+
     meetingPoint = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian, 0))
 
     plt.figure()
@@ -93,8 +104,35 @@ for exp_group_name, exp_group in exp_dict.items():
     plt.xlabel("Iteration")
     plt.ylabel("Reward")
     plt.legend()
-    plt.savefig(os.path.join(name, exp_group_name, "result.pdf"))
+    plt.savefig(os.path.join(name, exp_group_name, "reward.pdf"))
     plt.close()
+
+    plt.figure()
+    plt.plot(np.mean(cumulative_rewards_lta, 0), label="Actions")
+    plt.plot(np.mean(cumulative_rewards_ltd, 0), label='Gaussian')
+    plt.xlabel("Iteration")
+    plt.ylabel("Cumulative reward")
+    plt.legend()
+    # plt.show()  #it does not work
+    plt.savefig(os.path.join(name, exp_group_name, "reward_acc.pdf"))
+
+    plt.figure()
+    plt.plot(np.mean(p_best_lta, 0), label="Actions")
+    plt.plot(np.mean(p_best_ltd, 0), label='Gaussian')
+    plt.xlabel("Iteration")
+    plt.ylabel("Prob. of best action")
+    plt.legend()
+    # plt.show()  #it does not work
+    plt.savefig(os.path.join(name, exp_group_name, 'pbest_gaussian.pdf'))
+
+    plt.figure()
+    plt.plot(np.mean(times_best_lta, 0), label="Actions")
+    plt.plot(np.mean(times_best_ltd, 0), label='Gaussian')
+    plt.xlabel("Iteration")
+    plt.ylabel("#times played best action so far")
+    plt.legend()
+    # plt.show()  #it does not work
+    plt.savefig(os.path.join(name, exp_group_name, "tbest_gaussian.pdf"))
 
     pickleFile = open(os.path.join(name, exp_group_name, "results.pickle"), "wb")
     pickle.dump([
