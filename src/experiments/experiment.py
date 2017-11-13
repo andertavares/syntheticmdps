@@ -75,7 +75,7 @@ class ParallelExperiment(object):
         self.trials = trials
         self.verbose = verbose
         config_obj = config.Config.get_instance()
-        num_pool = min(config_obj.settings['max_parallel'], len(self.experiments))
+        num_pool = min(config_obj.settings['max_parallel_runs'], len(self.experiments))
 
         # self.pool = multiprocessing.Pool(num_pool)
 

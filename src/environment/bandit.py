@@ -19,7 +19,7 @@ class Bandit(object):
 
         # instantiate the gaussian arms with predefined mu
         config_obj = config.Config.get_instance()
-        num_pool = min(config_obj.settings['max_parallel'], n_arms)
+        num_pool = min(config_obj.settings['max_parallel_setup'], n_arms)
 
         # divides into a number of pools
         self.arms = []
@@ -45,7 +45,7 @@ class Bandit(object):
 
 
 if __name__ == '__main__':
-    # this test is looking good :)
+    # this test is looking good, but does not work as config is one module above
     import numpy as np
 
     print("Bandit test")

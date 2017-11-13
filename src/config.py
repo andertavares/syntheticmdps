@@ -43,7 +43,8 @@ class Config(object):
         settings['sigmas']      = experiment.get('sigmas', '0.2')
         settings['trials']      = int(experiment.get('trials', 10000))
         settings['executions']  = int(experiment.get('executions', 1000))
-        settings['max_parallel'] = int(experiment.get('max_parallel', 10))
+        settings['max_parallel_setup'] = int(experiment.get('max_parallel_setup', 10))
+        settings['max_parallel_runs'] = int(experiment.get('max_parallel_runs', 5))
 
 
         # process 'list' types
