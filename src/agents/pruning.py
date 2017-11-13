@@ -1,7 +1,8 @@
-import uniform
+from math import ceil
+
 import numpy as np
 import scipy.stats as stats
-from math import ceil
+import agents.uniform as uniform
 
 
 class PruningAgentWeak(uniform.UniformAgent):
@@ -161,6 +162,7 @@ class PruningAgentFair(PruningAgentWeak):
 
     def __str__(self):
         return "PruningAgentFair"
+
 
 class PruningAgentFair2(PruningAgentWeak):
     """

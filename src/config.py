@@ -39,6 +39,7 @@ class Config(object):
         settings['team_sizes']  = experiment.get('team_sizes', '10,20')
         settings['bandit_sizes'] = experiment.get('bandit_sizes', "200,500")
         settings['mus']         = experiment.get('mus', "0.2,0.4,0.6")
+        settings['upper_bounds'] = experiment.get('upper_bounds', "0.25,0.5,0.75")
         settings['sigmas']      = experiment.get('sigmas', '0.2')
         settings['trials']      = int(experiment.get('trials', 10000))
         settings['executions']  = int(experiment.get('executions', 1000))
@@ -49,6 +50,7 @@ class Config(object):
         settings['team_sizes'] = [int(x) for x in settings['team_sizes'].split(',')]
         settings['bandit_sizes'] = [int(x) for x in settings['bandit_sizes'].split(',')]
         settings['mus'] = [float(x) for x in settings['mus'].split(',')]
+        settings['upper_bounds'] = [float(x) for x in settings['upper_bounds'].split(',')]
         settings['sigmas'] = [float(x) for x in settings['sigmas'].split(',')]
 
         self.settings = settings
