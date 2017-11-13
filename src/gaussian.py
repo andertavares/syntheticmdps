@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import pickle
 
+import config
 from agents.learning import LearningAgent
 from environment.bandit import Bandit
 from experiments.experiment import Experiment, ParallelExperiment
@@ -15,14 +16,14 @@ from agents.gaussian import *
 from agents.delegator import Delegator
 from util import meeting_point
 
-# TODO get configs from file
+settings = config.parse(sys.argv[1])
 
-team_sizes = [5] # [5, 10, 15, 20, 25]
-bandit_sizes = [10] # [100, 150, 200, 250, 300]
-mus = [0.2, 0.4, 0.6]
-sigma = 0.2
-trials = 5000 #10k
-executions = 10 #1000
+team_sizes = settings['team_sizes']
+bandit_sizes = settings['bandit_sizes']
+mus = settings['mus']
+sigmas = settings['sigmas']
+trials = settings['trials']
+executions = settings['executions']
 executionRewardsActions = np.zeros((executions, trials))
 executionRewardsGaussian = np.zeros((executions, trials))
 p_best_ltd = np.zeros((executions, trials))
@@ -37,32 +38,37 @@ name = "results_gaussian"
 for n_arms in bandit_sizes:
     for team_sz in team_sizes:
         for currentMu in mus:
-            os.system("mkdir -p " + os.path.join(name, str(n_arms), str(team_sz), '%.2f' % currentMu))
+            for sigma in sigmas:
+                os.system("mkdir -p " + os.path.join(name, str(n_arms), str(team_sz), '%.2f' % currentMu))
 
-            # identifies groups of experiments by their parameters
-            exp_group_name = '%d/%d/%.2f' % (n_arms, team_sz, currentMu)
-            exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
+                # identifies groups of experiments by their parameters
+                exp_group_name = '%d/%d/%.2f' % (n_arms, team_sz, currentMu)
+                exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
 
-            for e in range(executions):
+                for e in range(executions):
+                    print(
+                        '\nSetup for %d arms, |X| = %d, mu = %.4f, sigma = %.4f, exec=%d' %
+                        (n_arms, team_sz, currentMu, sigma, e)
+                    )
 
-                bandit = Bandit(n_arms, None, 0.25)
+                    bandit = Bandit(n_arms, None, 0.25)
 
-                learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999)
-                ctrl_gaussian = Delegator(
-                    [GaussianAgentPrune(
-                        bandit, 0.95, mu=currentMu, sigma=sigma
-                    ) for _ in range(team_sz)],
-                    alpha=1.0,
-                    epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999
-                )
-                experiment_id = '%d/%d/%d/%.2f' % (e, n_arms, team_sz, currentMu)
+                    learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999)
+                    ctrl_gaussian = Delegator(
+                        [GaussianAgentPrune(
+                            bandit, 0.95, mu=currentMu, sigma=sigma
+                        ) for _ in range(team_sz)],
+                        alpha=1.0,
+                        epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999
+                    )
+                    experiment_id = '%d/%d/%d/%.2f' % (e, n_arms, team_sz, currentMu)
 
-                over_actions = Experiment(bandit, learner, 'LtA/' + experiment_id)
-                over_gaussian_agents = Experiment(bandit, ctrl_gaussian, 'LtD/' + experiment_id)
-                # over_actions.run(trials)
-                # over_gaussian_agents.run(trials)
-                experiments.append(over_actions)
-                experiments.append(over_gaussian_agents)
+                    over_actions = Experiment(bandit, learner, 'LtA/' + experiment_id)
+                    over_gaussian_agents = Experiment(bandit, ctrl_gaussian, 'LtD/' + experiment_id)
+                    # over_actions.run(trials)
+                    # over_gaussian_agents.run(trials)
+                    experiments.append(over_actions)
+                    experiments.append(over_gaussian_agents)
 
 
 
