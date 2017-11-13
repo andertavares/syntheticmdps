@@ -32,7 +32,7 @@ class Config(object):
         config.read(config_file)
 
         experiment = config['experiment']
-        settings = {}
+        settings = dict()
 
         # retrieving values, observing defaults
         settings['ltd_type']    = experiment.get('ltd_type', 'gaussian')
