@@ -138,8 +138,14 @@ for exp_group_name, exp_group in exp_dict.items():
 
     pickleFile = open(os.path.join(name, exp_group_name, "results.pickle"), "wb")
     pickle.dump([
-        np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0),
-        np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0),
+        np.mean(executionRewardsActions, 0),
+        np.mean(executionRewardsLtD, 0),
+        np.mean(p_best_lta, 0),
+        np.mean(p_best_ltd, 0),
+        np.mean(cumulative_rewards_lta, 0),
+        np.mean(cumulative_rewards_ltd, 0),
+        np.mean(times_best_lta, 0),
+        np.mean(times_best_ltd, 0),
         meetingPoint
     ], pickleFile)
     pickleFile.close()

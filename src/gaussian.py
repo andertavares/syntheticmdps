@@ -25,7 +25,7 @@ sigmas = settings['sigmas']
 trials = settings['trials']
 executions = settings['executions']
 executionRewardsActions = np.zeros((executions, trials))
-executionRewardsGaussian = np.zeros((executions, trials))
+executionRewardsLtD = np.zeros((executions, trials))
 p_best_ltd = np.zeros((executions, trials))
 p_best_lta = np.zeros((executions, trials))
 #expNumber = int(sys.argv[1])
@@ -89,7 +89,7 @@ for r in manager.result:
 print('Results organized')
 for exp_group_name, exp_group in exp_dict.items():
     executionRewardsActions = [exp.rewards for exp in exp_group['LtA']]
-    executionRewardsGaussian = [exp.rewards for exp in exp_group['LtD']]
+    executionRewardsLtD = [exp.rewards for exp in exp_group['LtD']]
 
     p_best_lta = [exp.p_best for exp in exp_group['LtA']]
     p_best_ltd = [exp.p_best for exp in exp_group['LtD']]
@@ -100,13 +100,13 @@ for exp_group_name, exp_group in exp_dict.items():
     cumulative_rewards_lta = [exp.cumulative_rewards for exp in exp_group['LtA']]
     cumulative_rewards_ltd = [exp.cumulative_rewards for exp in exp_group['LtD']]
 
-    meetingPoint = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian, 0))
+    meetingPoint = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0))
 
     plt.figure()
     plt.plot(np.mean(executionRewardsActions, 0), label="Actions")
-    plt.plot(np.mean(executionRewardsGaussian, 0), label="Gaussian")
+    plt.plot(np.mean(executionRewardsLtD, 0), label="Gaussian")
     plt.plot(np.convolve(np.mean(executionRewardsActions, 0), np.ones((100,))/100, mode='valid'))
-    plt.plot(np.convolve(np.mean(executionRewardsGaussian, 0), np.ones((100,))/100, mode='valid'))
+    plt.plot(np.convolve(np.mean(executionRewardsLtD, 0), np.ones((100,)) / 100, mode='valid'))
     plt.xlabel("Iteration")
     plt.ylabel("Reward")
     plt.legend()
@@ -142,8 +142,14 @@ for exp_group_name, exp_group in exp_dict.items():
 
     pickleFile = open(os.path.join(name, exp_group_name, "results.pickle"), "wb")
     pickle.dump([
-        np.mean(executionRewardsActions, 0), np.mean(executionRewardsGaussian, 0),
-        np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0),
+        np.mean(executionRewardsActions, 0),
+        np.mean(executionRewardsLtD, 0),
+        np.mean(p_best_lta, 0),
+        np.mean(p_best_ltd, 0),
+        np.mean(cumulative_rewards_lta, 0),
+        np.mean(cumulative_rewards_ltd, 0),
+        np.mean(times_best_lta, 0),
+        np.mean(times_best_ltd, 0),
         meetingPoint
     ], pickleFile)
     pickleFile.close()
