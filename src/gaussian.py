@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import pickle
 
-import config
+from config import Config
 from agents.learning import LearningAgent
 from environment.bandit import Bandit
 from experiments.experiment import Experiment, ParallelExperiment
@@ -16,7 +16,7 @@ from agents.gaussian import *
 from agents.delegator import Delegator
 from util import meeting_point
 
-settings = config.parse(sys.argv[1])
+settings = Config.get_instance().parse(sys.argv[1])
 
 team_sizes = settings['team_sizes']
 bandit_sizes = settings['bandit_sizes']

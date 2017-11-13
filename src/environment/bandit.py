@@ -1,4 +1,5 @@
 import sys
+import config
 import numpy as np
 import scipy.stats as stats
 from multiprocessing import Pool
@@ -17,7 +18,8 @@ class Bandit(object):
         self.best_reward = np.max(self.bandits_mu)
 
         # instantiate the gaussian arms with predefined mu
-        num_pool = min(10, n_arms)
+        config_obj = config.Config.get_instance()
+        num_pool = min(config_obj.settings['max_parallel'], n_arms)
 
         # divides into a number of pools
         self.arms = []

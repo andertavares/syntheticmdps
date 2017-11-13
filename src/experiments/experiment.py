@@ -1,6 +1,7 @@
 import os
 import sys
 import copy
+import config
 import numpy as np
 from multiprocessing import Pool
 import multiprocessing
@@ -73,7 +74,8 @@ class ParallelExperiment(object):
     def run(self, trials, verbose=False):
         self.trials = trials
         self.verbose = verbose
-        num_pool = min(10, len(self.experiments))
+        config_obj = config.Config.get_instance()
+        num_pool = min(config_obj.settings['max_parallel'], len(self.experiments))
 
         # self.pool = multiprocessing.Pool(num_pool)
 
