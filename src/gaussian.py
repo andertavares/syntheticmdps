@@ -46,8 +46,8 @@ for n_arms in bandit_sizes:
                 exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
 
                 for e in range(executions):
-                    print(
-                        '\nSetup for %d arms, |X| = %d, mu = %.4f, sigma = %.4f, exec=%d' %
+                    sys.stdout.write(
+                        '\rSetup for %d arms, |X| = %6d, mu = %.4f, sigma = %.4f, exec=%6d' %
                         (n_arms, team_sz, currentMu, sigma, e)
                     )
 
@@ -71,7 +71,7 @@ for n_arms in bandit_sizes:
                     experiments.append(over_gaussian_agents)
 
 
-print('Setup finished.')
+print('\nSetup finished.')
 manager = ParallelExperiment(experiments)
 manager.run(trials)
 print('\nExperiments finished.')
