@@ -22,6 +22,7 @@ settings = Config.get_instance().parse(sys.argv[1])
 team_sizes = settings['team_sizes']
 bandit_sizes = settings['bandit_sizes']
 us = settings['upper_bounds']
+print(us)
 #sigmas = settings['sigmas']
 trials = settings['trials']
 executions = settings['executions']
@@ -47,8 +48,8 @@ for n_arms in bandit_sizes:
             exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
 
             for e in range(executions):
-                print(
-                    '\nSetup for %d arms, |X| = %d, u = %.4f, , exec=%d' %
+                sys.stdout.write(
+                    '\rSetup for %d arms, |X| = %6d, u = %.4f, exec=%6d' %
                     (n_arms, team_sz, currentU, e)
                 )
 
@@ -68,10 +69,10 @@ for n_arms in bandit_sizes:
                 experiments.append(over_ltd)
 
 
-print('Setup finished.')
+print('\nSetup finished.')
 manager = ParallelExperiment(experiments)
 manager.run(trials)
-print('Experiments finished.')
+print('\nExperiments finished.')
 # organize results
 
 for r in manager.result:
