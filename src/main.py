@@ -121,16 +121,18 @@ def plot(results, output_dir, ltd_type):
     for r in results:
         # group by n_arms, team_sz and currentMu: each exec will be an entry
         index_str, execution_str, n_arms, team_sz, currentMu = r.id.split('/')
+        #print(index_str, execution_str, n_arms, team_sz, currentMu)
         exp_group_name = '%s/%s/%s' % (n_arms, team_sz, currentMu)
-        print('organizing ', exp_group_name)
+        #print('organizing ', exp_group_name)
 
         exp_group = exp_dict.get(exp_group_name, {'LtA': [], 'LtD': []})
 
         # index_str = 'LtA' if r.agent == 'LearningAgent' else 'LtD'
         exp_group[index_str].append(r)
-        exp_dict['exp_group_name'] = exp_group
+        #print('expgroup', exp_group)
+        exp_dict[exp_group_name] = exp_group
 
-    pprint.PrettyPrinter().pprint(exp_dict)
+    #pprint.PrettyPrinter().pprint(exp_dict)
 
     print('Results organized')
     for exp_group_name, exp_group in exp_dict.items():
@@ -146,7 +148,7 @@ def plot(results, output_dir, ltd_type):
         cumulative_rewards_lta = [exp.cumulative_rewards for exp in exp_group['LtA']]
         cumulative_rewards_ltd = [exp.cumulative_rewards for exp in exp_group['LtD']]
 
-        meeting_point = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0))
+        encounter = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0))
 
         ltd_name = ltd_type.capitalize() # 'Gaussian' if settings['ltd_type'] == 'gaussian' else 'Uniform'
 
@@ -200,7 +202,7 @@ def plot(results, output_dir, ltd_type):
             np.mean(cumulative_rewards_ltd, 0),
             np.mean(times_best_lta, 0),
             np.mean(times_best_ltd, 0),
-            meeting_point
+            encounter
         ], pickleFile)
         pickleFile.close()
 
