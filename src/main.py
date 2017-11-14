@@ -150,7 +150,7 @@ def plot(results, output_dir, ltd_type):
 
         encounter = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0))
 
-        ltd_name = ltd_type.capitalize() # 'Gaussian' if settings['ltd_type'] == 'gaussian' else 'Uniform'
+        ltd_name = ltd_type.capitalize()  # 'Gaussian' if settings['ltd_type'] == 'gaussian' else 'Uniform'
 
         plt.figure()
         plt.plot(np.mean(executionRewardsActions, 0), label="Actions")
@@ -161,7 +161,7 @@ def plot(results, output_dir, ltd_type):
         plt.ylabel("Reward")
         plt.legend()
 
-        print(output_dir, exp_group_name, "reward.pdf")
+        #print(output_dir, exp_group_name, "reward.pdf")
         plt.savefig(os.path.join(output_dir, exp_group_name, "reward.pdf"))
         plt.close()
 
