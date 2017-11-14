@@ -1,17 +1,5 @@
 import sys
 import configparser
-'''
-
-config['experiment'] = {
-    'ltd_type': 'gaussian',
-    'team_sizes': ,
-    'bandit_sizes': ,
-    'mus': ,
-    'sigmas': '0.2',
-    'trials': '10000',
-    'executions': '1000'
-
-}'''
 
 
 class Config(object):
@@ -19,7 +7,19 @@ class Config(object):
 
     def __init__(self):
         self.instance = self
-        self.settings = {}
+        # sets up some default values
+        self.settings = {
+            'ltd_type': 'gaussian',
+            'team_sizes': [10],
+            'bandit_sizes': [75],
+            'mus': [0.2, 0.4],
+            'upper_bounds': [0.25,0.75],
+            'sigmas': [0.2],
+            'trials': 1000,
+            'executions': 10,
+            'max_parallel_setup': 10,
+            'max_parallel_runs': 5
+        }
 
     @staticmethod
     def get_instance():

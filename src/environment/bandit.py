@@ -1,4 +1,8 @@
 import sys
+
+if __name__ == '__main__':
+    sys.path.append('..')
+
 import config
 import numpy as np
 import scipy.stats as stats
@@ -24,11 +28,11 @@ class Bandit(object):
         # divides into a number of pools
         self.arms = []
 
-        for i in range(0, n_arms, num_pool):
-            sys.stdout.write('\rCreating arm %6d to %6d' % (i, i + num_pool - 1))
-            with Pool(num_pool) as p:
-                partial_result = p.map(self.new_arm, range(i, i+num_pool))
-            self.arms += partial_result
+        #for i in range(0, n_arms, num_pool):
+        #    sys.stdout.write('\rCreating arm %6d to %6d' % (i, i + num_pool - 1))
+        with Pool(num_pool) as p:
+            self.arms = p.map(self.new_arm, range(0, n_arms))
+        #self.arms += partial_result
         #self.arms = []
 
     def new_arm(self, index):

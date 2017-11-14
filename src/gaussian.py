@@ -71,11 +71,10 @@ for n_arms in bandit_sizes:
                     experiments.append(over_gaussian_agents)
 
 
-
 print('Setup finished.')
 manager = ParallelExperiment(experiments)
 manager.run(trials)
-print('Experiments finished.')
+print('\nExperiments finished.')
 # organize results
 
 for r in manager.result:
