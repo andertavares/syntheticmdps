@@ -47,7 +47,7 @@ for n_arms in bandit_sizes:
 
                 for e in range(executions):
                     sys.stdout.write(
-                        '\rSetup for %d arms, |X| = %6d, mu = %.4f, sigma = %.4f, exec=%6d' %
+                        '\rSetup: |A| = %3d, |X| = %3d, mu = %.4f, sigma = %.4f, exec=%6d' %
                         (n_arms, team_sz, currentMu, sigma, e)
                     )
 
