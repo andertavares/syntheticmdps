@@ -18,7 +18,8 @@ class Config(object):
             'trials': 1000,
             'executions': 10,
             'max_parallel_setup': 10,
-            'max_parallel_runs': 5
+            'max_parallel_runs': 5,
+            'output_dir': 'results'
         }
 
     @staticmethod
@@ -45,7 +46,7 @@ class Config(object):
         settings['executions']  = int(experiment.get('executions', 1000))
         settings['max_parallel_setup'] = int(experiment.get('max_parallel_setup', 10))
         settings['max_parallel_runs'] = int(experiment.get('max_parallel_runs', 5))
-
+        settings['output_dir'] = experiment.get('output_dir', 'results')
 
         # process 'list' types
         settings['team_sizes'] = [int(x) for x in settings['team_sizes'].split(',')]

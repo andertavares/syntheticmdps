@@ -20,17 +20,12 @@ config_obj = config.Config.get_instance()
 settings = config_obj.parse(sys.argv[1])
 
 
-team_sizes = [5] # [5, 10, 15, 20, 25]
-bandit_sizes = [10] # [100, 150, 200, 250, 300]
-mus = [0.2, 0.4, 0.6]
-sigma = 0.2
-trials = 5000 #10k
-executions = 10 #1000
-executionRewardsActions = np.zeros((executions, trials))
-executionRewardsGaussian = np.zeros((executions, trials))
-p_best_ltd = np.zeros((executions, trials))
-p_best_lta = np.zeros((executions, trials))
-#expNumber = int(sys.argv[1])
+team_sizes = settings['team_sizes']
+bandit_sizes = settings['bandit_sizes']
+mus = settings['mus']
+sigmas = settings['sigmas']
+trials = settings['trials']
+executions = settings['executions']
 
 experiments = []
 exp_dict = {}
