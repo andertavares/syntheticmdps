@@ -14,6 +14,10 @@ class Config(object):
             'bandit_sizes': [75],
             'mus': [0.2, 0.4],
             'upper_bounds': [0.25,0.75],
+            'epsilon': 1.,
+            'epsilon_decay': .999,
+            'alpha': 1.,
+            'alpha_decay': .999,
             'sigmas': [0.2],
             'trials': 1000,
             'executions': 10,
@@ -43,6 +47,12 @@ class Config(object):
         settings['upper_bounds'] = experiment.get('upper_bounds', "0.25,0.5,0.75")
         settings['sigmas']      = experiment.get('sigmas', '0.2')
         settings['trials']      = int(experiment.get('trials', 10000))
+
+        settings['epsilon'] = float(experiment.get('epsilon', 1))
+        settings['alpha'] = float(experiment.get('alpha', 1))
+        settings['epsilon_decay'] = float(experiment.get('epsilon_decay', .999))
+        settings['alpha_decay'] = float(experiment.get('alpha_decay', .999))
+
         settings['executions']  = int(experiment.get('executions', 1000))
         settings['max_parallel_setup'] = int(experiment.get('max_parallel_setup', 10))
         settings['max_parallel_runs'] = int(experiment.get('max_parallel_runs', 5))

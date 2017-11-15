@@ -76,21 +76,24 @@ def main():
 
                     bandit = Bandit(n_arms, None, 0.25)
 
-                    learner = LearningAgent(bandit, alpha=1.0, epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999)
+                    learner = LearningAgent(
+                        bandit, alpha=settings['alpha'], epsilon=settings['epsilon'],
+                        alpha_decay=settings['alpha_decay'], epsilon_decay=settings['epsilon_decay']
+                    )
 
                     if settings['ltd_type'] == 'uniform':
                         controller = Delegator(
                             [PruningAgentFair2(bandit, 0.95, u=mu_or_upper_bound) for _ in range(team_sz)],
-                            alpha=1.0,
-                            epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999
+                            alpha=settings['alpha'], epsilon=settings['epsilon'],
+                            alpha_decay=settings['alpha_decay'], epsilon_decay=settings['epsilon_decay']
                         )
                     else:
                         controller = Delegator(
                             [GaussianAgentPrune(
                                 bandit, 0.95, mu=mu_or_upper_bound,  sigma=param[1]
                             ) for _ in range(team_sz)],
-                            alpha=1.0,
-                            epsilon=1.0, alpha_decay=0.999, epsilon_decay=0.999
+                            alpha=settings['alpha'], epsilon=settings['epsilon'],
+                            alpha_decay=settings['alpha_decay'], epsilon_decay=settings['epsilon_decay']
                         )
 
                     experiment_id = '%d/%d/%d/%.2f' % (e, n_arms, team_sz, mu_or_upper_bound)
