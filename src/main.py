@@ -122,18 +122,13 @@ def plot(results, output_dir, ltd_type):
     for r in results:
         # group by n_arms, team_sz and currentMu: each exec will be an entry
         index_str, execution_str, n_arms, team_sz, currentMu = r.id.split('/')
-        #print(index_str, execution_str, n_arms, team_sz, currentMu)
         exp_group_name = '%s/%s/%s' % (n_arms, team_sz, currentMu)
-        #print('organizing ', exp_group_name)
 
         exp_group = exp_dict.get(exp_group_name, {'LtA': [], 'LtD': []})
 
         # index_str = 'LtA' if r.agent == 'LearningAgent' else 'LtD'
         exp_group[index_str].append(r)
-        #print('expgroup', exp_group)
         exp_dict[exp_group_name] = exp_group
-
-    #pprint.PrettyPrinter().pprint(exp_dict)
 
     print('Results organized')
     for exp_group_name, exp_group in exp_dict.items():
