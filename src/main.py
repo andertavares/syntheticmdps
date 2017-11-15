@@ -169,6 +169,7 @@ def plot(results, output_dir, ltd_type):
         plt.legend()
         # plt.show()  #it does not work
         plt.savefig(os.path.join(output_dir, exp_group_name, "reward_acc.pdf"))
+        plt.close()
 
         plt.figure()
         plt.plot(np.mean(p_best_lta, 0), label="Actions")
@@ -178,6 +179,7 @@ def plot(results, output_dir, ltd_type):
         plt.legend()
         # plt.show()  #it does not work
         plt.savefig(os.path.join(output_dir, exp_group_name, 'pbest.pdf'))
+        plt.close()
 
         plt.figure()
         plt.plot(np.mean(times_best_lta, 0), label="Actions")
@@ -187,6 +189,7 @@ def plot(results, output_dir, ltd_type):
         plt.legend()
         # plt.show()  #it does not work
         plt.savefig(os.path.join(output_dir, exp_group_name, "tbest.pdf"))
+        plt.close()
 
         pickleFile = open(os.path.join(output_dir, exp_group_name, "results.pickle"), "wb")
         pickle.dump([
