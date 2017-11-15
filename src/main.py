@@ -25,7 +25,6 @@ def main():
     config_obj = config.Config.get_instance()
     settings = config_obj.parse(sys.argv[1])
 
-
     team_sizes = settings['team_sizes']
     bandit_sizes = settings['bandit_sizes']
     mus = settings['mus']
@@ -41,7 +40,8 @@ def main():
     dist_params = settings['upper_bounds']
 
     if settings['ltd_type'] == 'gaussian':
-        dist_params = itertools.product(settings['mus'], settings['sigmas'])
+        # must use list comprehension otherwise generator is consumed in 1st use
+        dist_params = [x for x in itertools.product(settings['mus'], settings['sigmas'])]
 
     #name = "results_gaussian"
 
@@ -51,6 +51,8 @@ def main():
     for n_arms in bandit_sizes:
         for team_sz in team_sizes:
             for param in dist_params:
+
+                print('Preparing for %d/%d/%s' % (n_arms, team_sz, param))
 
                 # if experiment is gaussian, param has two values
                 mu_or_upper_bound = param if settings['ltd_type'] == 'uniform' else param[0]
@@ -63,7 +65,6 @@ def main():
 
                 # identifies groups of experiments by their parameters
                 exp_group_name = '%d/%d/%.2f' % (n_arms, team_sz, mu_or_upper_bound)
-                #exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
 
                 # will have one experiment for each configuration of the parameters
                 experiment_batch = []
@@ -100,10 +101,7 @@ def main():
 
                     lta_experiment = Experiment(bandit, learner, 'LtA/' + experiment_id)
                     ltd_experiment = Experiment(bandit, controller, 'LtD/' + experiment_id)
-                    # over_actions.run(trials)
-                    # over_gaussian_agents.run(trials)
-                    #experiments.append(lta_experiment)
-                    #experiments.append(ltd_experiment)
+
                     experiment_batch.append(lta_experiment)
                     experiment_batch.append(ltd_experiment)
 
