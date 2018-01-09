@@ -47,17 +47,17 @@ def calcConfInt(p):
 
 team_sizes = [5,10,15,20,25];
 n_arms = [100,150,200,250,300];
-upper_bounds = [0.30,0.40,0.50,0.60,0.70,0.80,0.90];
+mus = [0.2,0.4,0.6];
 results = [];
 resultsLowCI = [];
-resultsFolder = "../../results/results_uniform_decay_e"
+resultsFolder = "../../results/results_gaussian_decay_e"
 #expNumber = 0;
 #bandit_sizes = [100,150,200,250,300];
 #us = [0.7,0.8,0.9];
 
 # tau as team size grows
 for n in n_arms:
-    for u in upper_bounds:
+    for u in mus:
         resultsReward = [];
         resultsLowCIReward = [];
         resultsPBest = [];
@@ -126,13 +126,13 @@ for n in n_arms:
             plt.xlabel("Team Size");
             plt.ylabel("Tau");
 
-            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeTeamSize-"+str(n)+"-" + str(u) +"-uniform.pdf",bbox_inches='tight');
+            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeTeamSize-"+str(n)+"-" + str(u) +"-gaussian.pdf",bbox_inches='tight');
             plt.close();
 
             
 # tau as problem size grows
 
-for u in upper_bounds:
+for u in mus:
     for team_sz in team_sizes:
         resultsReward = [];
         resultsLowCIReward = [];
@@ -201,11 +201,11 @@ for u in upper_bounds:
             plt.xlabel("Problem Size");
             plt.ylabel("Tau");
 
-            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeProblemSize-"+str(team_sz)+"-" + str(u)+"-uniform.pdf",bbox_inches='tight');
+            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeProblemSize-"+str(team_sz)+"-" + str(u)+"-gaussian.pdf",bbox_inches='tight');
             plt.close();
 
 
-# # tau as upper bound grows
+# # tau as mus grows
 
 for n in n_arms:
     for team_sz in team_sizes:
@@ -223,7 +223,7 @@ for n in n_arms:
         resultsLowCIRegretExp = [];
 
 
-        for u in upper_bounds:
+        for u in mus:
             currentResultReward = [];
             currentResultPBest = [];
             currentResultTimesBest = [];
@@ -273,10 +273,10 @@ for n in n_arms:
         for p in range(6):
             plt.figure(figsize=(3.0,2.0));
 
-            plt.errorbar(upper_bounds,resultsToPlot[p],yerr=np.array(resultsToPlot[p])-np.array(CIsToPlot[p]),capsize=3);
+            plt.errorbar(mus,resultsToPlot[p],yerr=np.array(resultsToPlot[p])-np.array(CIsToPlot[p]),capsize=3);
 
-            plt.xlabel("Upper Bound");
+            plt.xlabel(r"\mu");
             plt.ylabel("Tau");
 
-            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeUpperBound-"+str(n)+"-" + str(team_sz)+"-uniform.pdf",bbox_inches='tight');
+            plt.savefig("plots/tau"+namesToPlot[p]+"-ChangeUpperBound-"+str(n)+"-" + str(team_sz)+"-gaussian.pdf",bbox_inches='tight');
             plt.close();
