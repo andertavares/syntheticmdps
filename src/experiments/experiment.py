@@ -20,7 +20,9 @@ class Experiment(object):
         self.cumulative_times_best = []
         self.cumulative_reward = 0
         self.cumulative_regret = 0      # actual cumulative regret
+        self.cumulative_regrets = []
         self.cumulative_regret_exp = 0  # expected cumulative regret
+        self.cumulative_regrets_exp = []
         self.freq_best_action = 0       # no. of times the agent select the best arm
         self.trials = 0
 
@@ -42,8 +44,10 @@ class Experiment(object):
             self.p_best.append(self.agent.p_best(self.env))
             self.cumulative_reward += reward
             self.cumulative_rewards.append(self.cumulative_reward)
-            self.cumulative_regret += self.env.best_reward - reward
+            self.cumulative_regret += self.env.play(self.env.best_arm) - reward ## Here it should be the actual rewards, not the mean
+            self.cumulative_regrets.append(self.cumulative_regret)
             self.cumulative_regret_exp += self.env.best_reward - self.env.bandits_mu[action]
+            self.cumulative_regrets_exp.append(self.cumulative_regret_exp)
 
             if action == self.env.best_arm:
                 times_best_action += 1
