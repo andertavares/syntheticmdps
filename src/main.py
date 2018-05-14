@@ -24,8 +24,6 @@ from util import meeting_point
 def main():
     config_obj = config.Config.get_instance()
     settings = config_obj.parse(sys.argv[1])
-
-    expNumber = int(sys.argv[2]); #LEANDRO
     
     team_sizes = settings['team_sizes']
     bandit_sizes = settings['bandit_sizes']
@@ -35,7 +33,6 @@ def main():
     executions = settings['executions']
 
     experiments = []
-    #exp_dict = {}
 
     # values of the prob. distribution of agent generation
     # it vary in nature if we're dealing with gaussian or uniform
@@ -45,25 +42,12 @@ def main():
         # must use list comprehension otherwise generator is consumed in 1st use
         dist_params = [x for x in itertools.product(settings['mus'], settings['sigmas'])]
 
-    #name = "results_gaussian"
-
     print('Parameters:')
     pprint.PrettyPrinter().pprint(settings)
-    ''' LEANDRO
 
-    executionRewards_lta = np.zeros((executions,trials));
-    executionRewards_ltd = np.zeros((executions,trials));
-    p_best_lta = np.zeros((executions,trials));
-    p_best_ltd = np.zeros((executions,trials));
-    times_best_lta = np.zeros((executions,trials));
-    times_best_ltd = np.zeros((executions,trials));
-    cumulative_rewards_lta = np.zeros((executions,trials));
-    cumulative_rewards_ltd = np.zeros((executions,trials));
-    cumulative_regret_lta = np.zeros((executions,trials));
-    cumulative_regret_ltd = np.zeros((executions,trials));
-    cumulative_regret_exp_lta = np.zeros((executions,trials));
-    cumulative_regret_exp_ltd = np.zeros((executions,trials)); 
-    '''
+    # sets up a number of experiments for each variation on bandit size,
+    # team size and distribution parameters
+    # the number of repetitions for each variation is in the 'executions' variable
     for n_arms in bandit_sizes:
         for team_sz in team_sizes:
             for param in dist_params:
@@ -76,13 +60,6 @@ def main():
                 os.system(
                     "mkdir -p " + os.path.join(
                         settings['output_dir'], str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound
-                    )
-                )
-
-		#Leandro
-		os.system(
-                    "mkdir -p " + os.path.join(
-                        settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound
                     )
                 )
 
@@ -123,131 +100,19 @@ def main():
                     experiment_id = '%d/%d/%d/%.2f' % (e, n_arms, team_sz, mu_or_upper_bound)
 
                     lta_experiment = Experiment(bandit, learner, 'LtA/' + experiment_id)
-                    lta_experiment.run(trials); #leandro
-                    
                     ltd_experiment = Experiment(bandit, controller, 'LtD/' + experiment_id)
-                    ltd_experiment.run(trials); #leandro
-
-		    '''Leandro'''
-                    executionRewards_lta[e] = lta_experiment.rewards;
-                    executionRewards_ltd[e] = ltd_experiment.rewards;
-                    
-                    p_best_lta[e] = lta_experiment.p_best;
-                    p_best_ltd[e] = ltd_experiment.p_best;	
 
                     experiment_batch.append(lta_experiment)
                     experiment_batch.append(ltd_experiment)
-		#MINE
+
                 # this batch of experiment is ready. run it:
                 print('\nSetup finished for %d experiments.' % len(experiment_batch))
                 manager = ParallelExperiment(experiment_batch)
                 manager.run(trials)
                 plot(manager.result, settings['output_dir'], settings['ltd_type'])
                 print('Plot OK for %s' % exp_group_name)
-		#LEANDRO
-		times_best_lta[e] = lta_experiment.cumulative_times_best;
-                    times_best_ltd[e] = ltd_experiment.cumulative_times_best;
 
-                    cumulative_rewards_lta[e] = lta_experiment.cumulative_rewards;
-                    cumulative_rewards_ltd[e] = ltd_experiment.cumulative_rewards;
 
-                    cumulative_regret_lta[e] = lta_experiment.cumulative_regrets;
-                    cumulative_regret_ltd[e] = ltd_experiment.cumulative_regrets;
-
-                    cumulative_regret_exp_lta[e] = lta_experiment.cumulative_regrets_exp;
-                    cumulative_regret_exp_ltd[e] = ltd_experiment.cumulative_regrets_exp;
-
-                meetingPointRewards = meeting_point(np.mean(executionRewards_lta,0),np.mean(executionRewards_ltd,0));
-                meetingPointPBest = meeting_point(np.mean(p_best_lta,0), np.mean(p_best_ltd,0));
-                meetingPointTimesBest = meeting_point(np.mean(times_best_lta,0), np.mean(times_best_ltd,0));
-                meetingPointCumulativeReward = meeting_point(np.mean(cumulative_rewards_lta,0), np.mean(cumulative_rewards_ltd,0));
-                meetingPointCumulativeRegret = meeting_point(np.mean(cumulative_regret_ltd,0), np.mean(cumulative_regret_lta,0));
-                meetingPointRegretExp = meeting_point(np.mean(cumulative_regret_exp_ltd,0), np.mean(cumulative_regret_exp_lta,0));
-
-                plt.figure();
-                plt.plot(np.mean(executionRewards_lta,0),label="Actions");
-                plt.plot(np.mean(executionRewards_ltd,0),label="Delegate");
-                plt.plot(np.convolve(np.mean(executionRewards_lta,0), np.ones((100,))/100, mode='valid'));
-                plt.plot(np.convolve(np.mean(executionRewards_ltd,0), np.ones((100,))/100, mode='valid'));
-                plt.xlabel("Iteration");
-                plt.ylabel("Reward");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"reward.pdf"));
-                plt.close();
-
-                plt.figure();
-                plt.plot(np.mean(p_best_lta,0),color="#1f77b4",label="Actions");
-                plt.plot(np.mean(p_best_ltd,0),color="#ff7f0e",label="Delegate");
-                plt.errorbar(range(0,trials,50),np.mean(p_best_lta,0)[0:trials:50],yerr=np.std(p_best_lta,0)[0:trials:50],color="#1f77b4",fmt=".",capsize=3);
-                plt.errorbar(range(0,trials,50),np.mean(p_best_ltd,0)[0:trials:50],yerr=np.std(p_best_ltd,0)[0:trials:50],color="#ff7f0e",fmt=".", capsize=3);
-                plt.xlabel("Iteration");
-                plt.ylabel(r"$p_{a^*}$");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"pbest.pdf"));
-                plt.close();
-
-                plt.figure();
-                plt.plot(np.mean(times_best_lta,0),color="#1f77b4",label="Actions");
-                plt.plot(np.mean(times_best_ltd,0),color="#ff7f0e",label="Delegate");
-                plt.errorbar(range(0,trials,50),np.mean(times_best_lta,0)[0:trials:50],yerr=np.std(times_best_lta,0)[0:trials:50],color="#1f77b4",fmt=".",capsize=3);
-                plt.errorbar(range(0,trials,50),np.mean(times_best_ltd,0)[0:trials:50],yerr=np.std(times_best_ltd,0)[0:trials:50],color="#ff7f0e",fmt=".", capsize=3);
-                plt.xlabel("Iteration");
-                plt.ylabel(r"# $a^*$");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"timesBest.pdf"));
-                plt.close();
-
-                plt.figure();
-                plt.plot(np.mean(cumulative_rewards_lta,0),color="#1f77b4",label="Actions");
-                plt.plot(np.mean(cumulative_rewards_ltd,0),color="#ff7f0e",label="Delegate");
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_rewards_lta,0)[0:trials:50],yerr=np.std(cumulative_rewards_lta,0)[0:trials:50],color="#1f77b4",fmt=".",capsize=3);
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_rewards_ltd,0)[0:trials:50],yerr=np.std(cumulative_rewards_ltd,0)[0:trials:50],color="#ff7f0e",fmt=".", capsize=3);              
-                plt.xlabel("Iteration");
-                plt.ylabel(r"$\sum $Reward");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"cumulativeRewards.pdf"));
-                plt.close();
-
-                plt.figure();
-                plt.plot(np.mean(cumulative_regret_lta,0),color="#1f77b4",label="Actions");
-                plt.plot(np.mean(cumulative_regret_ltd,0),color="#ff7f0e",label="Delegate");
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_regret_lta,0)[0:trials:50],yerr=np.std(cumulative_regret_lta,0)[0:trials:50],color="#1f77b4",fmt=".",capsize=3);
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_regret_ltd,0)[0:trials:50],yerr=np.std(cumulative_regret_ltd,0)[0:trials:50],color="#ff7f0e",fmt=".", capsize=3);
-                plt.xlabel("Iteration");
-                plt.ylabel(r"$\sum $Regret");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"cumulativeRegret.pdf"));
-                plt.close();
-
-                plt.figure();
-                plt.plot(np.mean(cumulative_regret_exp_lta,0),color="#1f77b4",label="Actions");
-                plt.plot(np.mean(cumulative_regret_exp_ltd,0),color="#ff7f0e",label="Delegate");
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_regret_exp_lta,0)[0:trials:50],yerr=np.std(cumulative_regret_exp_lta,0)[0:trials:50],color="#1f77b4",fmt=".",capsize=3);
-                plt.errorbar(range(0,trials,50),np.mean(cumulative_regret_exp_ltd,0)[0:trials:50],yerr=np.std(cumulative_regret_exp_ltd,0)[0:trials:50],color="#ff7f0e",fmt=".", capsize=3);
-                plt.xlabel("Iteration");
-                plt.ylabel(r"$E(\sum $Regret$)$");
-                plt.legend();
-                plt.savefig(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound,"expectedCumulativeRegret.pdf"));
-                plt.close();
-
-                pickleFile = open(os.path.join(settings['output_dir'],str(expNumber), str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound, "results.pickle"), "wb")
-                pickle.dump([
-                    np.mean(executionRewards_lta, 0),
-                    np.mean(executionRewards_ltd, 0),
-                    np.mean(p_best_lta, 0),
-                    np.mean(p_best_ltd, 0),
-                    np.mean(times_best_lta, 0),
-                    np.mean(times_best_ltd, 0),                    
-                    np.mean(cumulative_rewards_lta, 0),
-                    np.mean(cumulative_rewards_ltd, 0),
-                    np.mean(cumulative_regret_lta, 0),
-                    np.mean(cumulative_regret_ltd, 0),
-                    np.mean(cumulative_regret_exp_lta, 0),
-                    np.mean(cumulative_regret_exp_ltd, 0),
-                    meetingPointRewards, meetingPointPBest, meetingPointTimesBest,meetingPointCumulativeReward,meetingPointCumulativeRegret,meetingPointRegretExp,
-                ], pickleFile)
-                pickleFile.close()
-		'''
 def plot(results, output_dir, ltd_type):
 
     #exp_dict[exp_group_name] = {'LtA': [], 'LtD': []}
