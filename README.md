@@ -14,3 +14,27 @@ This repository contains code to empirically evaluate the training time vs attai
 So far, we're working with single-state MDPs, but the results were able to support the following paper: 
 
 # Usage
+
+## Execution
+The experiment scripts come in two flavors: parallel and sequential.   
+
+Each possible combination of parameters is a repetition, and the experiments can be configured to run several repetitions. 
+In parallel, all repetitions of each parameter combination are previously loaded. Then they are dispatched to run in parallel.
+
+In some machines, the memory might be insufficient to store all repetitions prior to dispatch. The sequential script remedies this issue: it loads and runs a repetition, freeing up memory for the next. However, it runs slower for not running in parallel.
+
+The commands are:
+
+- Parallel - to run experiments making use of parallel processing capabilities, use:
+```bash
+$ python3 src/main_parallel.py path_to_config_file.ini
+```
+
+- Sequential - to run experiments sequentially with low memory consumption, use:
+```bash
+$ python3 src/main_sequential.py path_to_config_file.ini experiment_identifier
+```
+
+Please take a look on the specifications of the config. file in the next section.
+
+## Configuration file
