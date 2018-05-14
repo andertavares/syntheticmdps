@@ -57,6 +57,8 @@ def main():
                 # if experiment is gaussian, param has two values
                 mu_or_upper_bound = param if settings['ltd_type'] == 'uniform' else param[0]
 
+                # TODO: verify if experiments with different sigmas are being written to different places
+                # or just the last one prevails
                 os.system(
                     "mkdir -p " + os.path.join(
                         settings['output_dir'], str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound
