@@ -15,7 +15,7 @@ So far, we're working with single-state MDPs, but the results were able to suppo
 
 A. R. Tavares, S. Anbalagan, L. S. Marcolino and L. Chaimowicz. _Algorithms or Actions? A Study in Large-Scale Reinforcement Learning_. In Proceedings of the 27th International Joint Conference on Artificial Intelligence (IJCAI 2018), July 2018.
 
-The configurations used in that paper's synthetic experiments are in the *ijcai18* directory, please take a look at the Readme.md there.
+The configurations used in that paper's synthetic experiments are in the *[configs/ijcai18](https://github.com/andertavares/syntheticmdps/tree/master/configs/ijcai18)* directory, please take a look at the Readme.md there.
 
 # Running and configuring experiments
 
