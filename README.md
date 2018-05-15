@@ -12,6 +12,7 @@ It won't be difficult to find the best algorithm if the set of algorithms is sma
 This repository contains code to empirically evaluate the training time vs attainable performance tradeoff. The code allows one to simulate MDPs with various action spaces and test different portfolio sizes (i.e. numbers of algorithms) and specific characteristics of the algorithms: their generation processes and strength-related parameters.
 
 So far, we're working with single-state MDPs, but the results were able to support the following paper: 
+
 A. R. Tavares, S. Anbalagan, L. S. Marcolino and L. Chaimowicz. _Algorithms or Actions? A Study in Large-Scale Reinforcement Learning_. In Proceedings of the 27th International Joint Conference on Artificial Intelligence (IJCAI 2018), July 2018.
 
 The configurations used in that paper's synthetic experiments are in the *ijcai18* directory, please take a look at the Readme.md there.
