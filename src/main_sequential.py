@@ -201,7 +201,7 @@ def main():
                 plt.errorbar(range(0, trials, 50), np.mean(cumulative_rewards_lta,  0)[0:trials:50], yerr=np.std(cumulative_rewards_lta,  0)[0:trials:50], color="#1f77b4", fmt=".", capsize=3)
                 plt.errorbar(range(0, trials, 50), np.mean(cumulative_rewards_ltd,  0)[0:trials:50], yerr=np.std(cumulative_rewards_ltd,  0)[0:trials:50], color="#ff7f0e", fmt=".",  capsize=3)
                 plt.xlabel("Iteration")
-                plt.ylabel(r"$\sum $Reward")
+                plt.ylabel("Cumulative reward")
                 plt.legend()
                 plt.savefig(os.path.join(settings['output_dir'], str(expNumber), str(n_arms), str(team_sz),
                                          '%.2f' % mu_or_upper_bound, "cumulativeRewards.pdf"))

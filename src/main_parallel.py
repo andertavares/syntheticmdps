@@ -57,8 +57,7 @@ def main():
                 # if experiment is gaussian, param has two values
                 mu_or_upper_bound = param if settings['ltd_type'] == 'uniform' else param[0]
 
-                # TODO: verify if experiments with different sigmas are being written to different places
-                # or just the last one prevails
+                # TODO: make experiments with different sigmas be written to different places
                 os.system(
                     "mkdir -p " + os.path.join(
                         settings['output_dir'], str(n_arms), str(team_sz), '%.2f' % mu_or_upper_bound
@@ -134,8 +133,10 @@ def plot(results, output_dir, ltd_type):
 
     print('Results organized')
     for exp_group_name, exp_group in exp_dict.items():
-        executionRewardsActions = [exp.rewards for exp in exp_group['LtA']]
-        executionRewardsLtD = [exp.rewards for exp in exp_group['LtD']]
+        # extracts data of training with algorithms and actions
+        trials = exp_group['LtA'][0].trials  # TODO check if the number is the same across all experiment in the group
+        execution_rwd_lta = [exp.rewards for exp in exp_group['LtA']]
+        execution_rwd_ltd = [exp.rewards for exp in exp_group['LtD']]
 
         p_best_lta = [exp.p_best for exp in exp_group['LtA']]
         p_best_ltd = [exp.p_best for exp in exp_group['LtD']]
@@ -146,66 +147,154 @@ def plot(results, output_dir, ltd_type):
         cumulative_rewards_lta = [exp.cumulative_rewards for exp in exp_group['LtA']]
         cumulative_rewards_ltd = [exp.cumulative_rewards for exp in exp_group['LtD']]
 
-        encounter = meeting_point(np.mean(executionRewardsActions, 0), np.mean(executionRewardsLtD, 0))
+        cumulative_regret_lta = [exp.cumulative_regrets for exp in exp_group['LtA']]
+        cumulative_regret_ltd = [exp.cumulative_regrets for exp in exp_group['LtD']]
+
+        cumulative_regret_exp_lta = [exp.cumulative_regrets_exp for exp in exp_group['LtA']]
+        cumulative_regret_exp_ltd = [exp.cumulative_regrets_exp for exp in exp_group['LtD']]
+
+        # calculates the meeting points (where learning over actions starts
+        # to outperform learning over algorithms) for various metrics
+        meeting_rewards = meeting_point(np.mean(execution_rwd_lta, 0), np.mean(execution_rwd_ltd, 0))
+        meeting_pbest = meeting_point(np.mean(p_best_lta, 0), np.mean(p_best_ltd, 0))
+        meeting_tbest = meeting_point(np.mean(times_best_lta, 0), np.mean(times_best_ltd, 0))
+        meeting_cumulative_reward = meeting_point(np.mean(cumulative_rewards_lta, 0), np.mean(cumulative_rewards_ltd, 0))
+        meeting_cumulative_regret = meeting_point(np.mean(cumulative_regret_ltd, 0), np.mean(cumulative_regret_lta, 0))
+        meeting_regret_exp = meeting_point(np.mean(cumulative_regret_exp_ltd, 0), np.mean(cumulative_regret_exp_lta, 0))
 
         ltd_name = ltd_type.capitalize()  # 'Gaussian' if settings['ltd_type'] == 'gaussian' else 'Uniform'
 
+        # plots instantaneous reward
         plt.figure()
-        plt.plot(np.mean(executionRewardsActions, 0), label="Actions")
-        plt.plot(np.mean(executionRewardsLtD, 0), label=ltd_name)
-        plt.plot(np.convolve(np.mean(executionRewardsActions, 0), np.ones((100,))/100, mode='valid'))
-        plt.plot(np.convolve(np.mean(executionRewardsLtD, 0), np.ones((100,)) / 100, mode='valid'))
+        plt.plot(np.mean(execution_rwd_lta, 0), label="Actions")
+        plt.plot(np.mean(execution_rwd_ltd, 0), label=ltd_name)
+        plt.plot(np.convolve(np.mean(execution_rwd_lta, 0), np.ones((100,))/100, mode='valid'))
+        plt.plot(np.convolve(np.mean(execution_rwd_ltd, 0), np.ones((100,)) / 100, mode='valid'))
         plt.xlabel("Iteration")
         plt.ylabel("Reward")
         plt.legend()
-
-        #print(output_dir, exp_group_name, "reward.pdf")
         plt.savefig(os.path.join(output_dir, exp_group_name, "reward.pdf"))
         plt.close()
 
+        # plots pbest (probability of selecting the best action
         plt.figure()
-        plt.plot(np.mean(cumulative_rewards_lta, 0), label="Actions")
-        plt.plot(np.mean(cumulative_rewards_ltd, 0), label=ltd_name)
+        plt.plot(np.mean(p_best_lta, 0), color="#1f77b4", label="Actions")
+        plt.plot(np.mean(p_best_ltd, 0), color="#ff7f0e", label=ltd_name)
+        plt.errorbar(
+            range(0, trials, 50), np.mean(p_best_lta, 0)[0:trials:50],
+            yerr=np.std(p_best_lta, 0)[0:trials:50],
+            color="#1f77b4", fmt=".", capsize=3
+        )
+        plt.errorbar(
+            range(0, trials, 50), np.mean(p_best_ltd, 0)[0:trials:50],
+            yerr=np.std(p_best_ltd, 0)[0:trials:50],
+            color="#ff7f0e", fmt=".", capsize=3
+        )
         plt.xlabel("Iteration")
-        plt.ylabel("Cumulative reward")
+        plt.ylabel(r"$p_{a^*} (pbest)$")
         plt.legend()
-        # plt.show()  #it does not work
-        plt.savefig(os.path.join(output_dir, exp_group_name, "reward_acc.pdf"))
-        plt.close()
-        
-        plt.figure()
-        plt.plot(np.mean(p_best_lta, 0), label="Actions")
-        plt.plot(np.mean(p_best_ltd, 0), label=ltd_name)
-        plt.xlabel("Iteration")
-        plt.ylabel("Prob. of best action")
-        plt.legend()
-        # plt.show()  #it does not work
         plt.savefig(os.path.join(output_dir, exp_group_name, 'pbest.pdf'))
         plt.close()
 
+        # plots the number of times the best action has been selected
         plt.figure()
-        plt.plot(np.mean(times_best_lta, 0), label="Actions")
-        plt.plot(np.mean(times_best_ltd, 0), label=ltd_name)
+        plt.plot(np.mean(times_best_lta, 0), color="#1f77b4", label="Actions")
+        plt.plot(np.mean(times_best_ltd, 0), color="#ff7f0e", label=ltd_name)
+        plt.errorbar(
+            range(0, trials, 50), np.mean(times_best_lta, 0)[0:trials:50],
+            yerr=np.std(times_best_lta, 0)[0:trials:50],
+            color="#1f77b4", fmt=".", capsize=3
+        )
+        plt.errorbar(
+            range(0, trials, 50), np.mean(times_best_ltd, 0)[0:trials:50],
+            yerr=np.std(times_best_ltd, 0)[0:trials:50],
+            color="#ff7f0e", fmt=".", capsize=3
+        )
         plt.xlabel("Iteration")
-        plt.ylabel("#times played best action so far")
+        plt.ylabel(r"# $a^*$ (#times a* was played)")
         plt.legend()
-        # plt.show()  #it does not work
-        plt.savefig(os.path.join(output_dir, exp_group_name, "tbest.pdf"))
+        plt.savefig(os.path.join(output_dir, exp_group_name, "timesBest.pdf"))
         plt.close()
 
-        pickleFile = open(os.path.join(output_dir, exp_group_name, "results.pickle"), "wb")
+        # plots the cumulative reward
+        plt.figure()
+        plt.plot(np.mean(cumulative_rewards_lta, 0), color="#1f77b4", label="Actions")
+        plt.plot(np.mean(cumulative_rewards_ltd, 0), color="#ff7f0e", label=ltd_name)
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_rewards_lta, 0)[0:trials:50],
+            yerr=np.std(cumulative_rewards_lta, 0)[0:trials:50],
+            color="#1f77b4", fmt=".", capsize=3
+        )
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_rewards_ltd, 0)[0:trials:50],
+            yerr=np.std(cumulative_rewards_ltd, 0)[0:trials:50],
+            color="#ff7f0e", fmt=".", capsize=3
+        )
+        plt.xlabel("Iteration")
+        plt.ylabel("Cumulative reward")
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, exp_group_name, "cumulativeRewards.pdf"))
+        plt.close()
+
+        # plots the cumulative regret
+        plt.figure()
+        plt.plot(np.mean(cumulative_regret_lta, 0), color="#1f77b4", label="Actions")
+        plt.plot(np.mean(cumulative_regret_ltd, 0), color="#ff7f0e", label="Delegate")
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_regret_lta, 0)[0:trials:50],
+            yerr=np.std(cumulative_regret_lta, 0)[0:trials:50],
+            color="#1f77b4", fmt=".", capsize=3
+        )
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_regret_ltd, 0)[0:trials:50],
+            yerr=np.std(cumulative_regret_ltd, 0)[0:trials:50],
+            color="#ff7f0e", fmt=".", capsize=3
+        )
+        plt.xlabel("Iteration")
+        plt.ylabel(r"$\sum $Regret")
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, exp_group_name, "cumulativeRegret.pdf"))
+        plt.close()
+
+        # plots the expected cumulative regret
+        plt.figure()
+        plt.plot(np.mean(cumulative_regret_exp_lta, 0), color="#1f77b4", label="Actions")
+        plt.plot(np.mean(cumulative_regret_exp_ltd, 0), color="#ff7f0e", label="Delegate")
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_regret_exp_lta, 0)[0:trials:50],
+            yerr=np.std(cumulative_regret_exp_lta, 0)[0:trials:50],
+            color="#1f77b4", fmt=".", capsize=3
+        )
+        plt.errorbar(
+            range(0, trials, 50), np.mean(cumulative_regret_exp_ltd, 0)[0:trials:50],
+            yerr=np.std(cumulative_regret_exp_ltd, 0)[0:trials:50],
+            color="#ff7f0e", fmt=".", capsize=3
+        )
+        plt.xlabel("Iteration")
+        plt.ylabel(r"$E(\sum $Regret$)$")
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, exp_group_name, "expectedCumulativeRegret.pdf"))
+        plt.close()
+
+        # dumps the aggregate/mean results to a pickle file
+        pickle_file = open(os.path.join(output_dir, exp_group_name, "results.pickle"), "wb")
         pickle.dump([
-            np.mean(executionRewardsActions, 0),
-            np.mean(executionRewardsLtD, 0),
+            np.mean(execution_rwd_lta, 0),
+            np.mean(execution_rwd_ltd, 0),
             np.mean(p_best_lta, 0),
             np.mean(p_best_ltd, 0),
-            np.mean(cumulative_rewards_lta, 0),
-            np.mean(cumulative_rewards_ltd, 0),
             np.mean(times_best_lta, 0),
             np.mean(times_best_ltd, 0),
-            encounter
-        ], pickleFile)
-        pickleFile.close()
+            np.mean(cumulative_rewards_lta, 0),
+            np.mean(cumulative_rewards_ltd, 0),
+            np.mean(cumulative_regret_lta, 0),
+            np.mean(cumulative_regret_ltd, 0),
+            np.mean(cumulative_regret_exp_lta, 0),
+            np.mean(cumulative_regret_exp_ltd, 0),
+            meeting_rewards, meeting_pbest, meeting_tbest, meeting_cumulative_reward,
+            meeting_cumulative_regret, meeting_regret_exp
+        ], pickle_file)
+        pickle_file.close()
 
 
 if __name__ == '__main__':
