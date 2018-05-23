@@ -27,8 +27,6 @@ def main():
     
     team_sizes = settings['team_sizes']
     bandit_sizes = settings['bandit_sizes']
-    mus = settings['mus']
-    sigmas = settings['sigmas']
     trials = settings['trials']
     executions = settings['executions']
 
