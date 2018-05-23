@@ -131,7 +131,7 @@ def plot_tau(x_data, y_data, x_label, y_label):
 if __name__ == '__main__':
     x_axis = 'team_sizes'  # must be a valid field in the .ini config file
     config_path = '../configs/ijcai18/uniform_team-size.ini'
-    results_root = '/tmp/uniform_team/0/' # make sure this exists!
+    results_root = '/tmp/uniform_team/0/'  # make sure this exists!
 
     x_data, y_data = gather_tau(x_axis, config_path, 13, results_root) #13 gives meeting_pbest
     plot_tau(x_data, y_data, x_axis, r'$p_{a^*}$')
