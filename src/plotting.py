@@ -99,8 +99,13 @@ def gather_tau(x_axis, config_path, tau_index, results_root=None):
                 )  # '%s/%d/%d/%.2f' % (bandit_size, team_size, mu)
 
                 data = load_pickle(path)
+                tau_value = data[tau_index]
 
-                y_values.append(data[tau_index])
+                # checks if learning over actions never reached over algorithms (-1 indicates that)
+                if tau_value == -1:
+                    tau_value = settings['trials']
+
+                y_values.append(tau_value)
 
     return x_values, y_values
 
